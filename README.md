@@ -5,9 +5,7 @@ The goal was to use config file for create new makefile
 
 Usage: ./automakefile config_path
 
-exemple of a config file:
-
-![config/newconfig](./configtest/newconfig)
+![exemple of a config file](./configtest/newconfig)
 
 only line with .c file and PROJECT_DIR are mandatory, the order isn't important
 
