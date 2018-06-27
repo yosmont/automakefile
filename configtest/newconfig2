@@ -1,0 +1,14 @@
+source_filename;main.c bfg.c gzdoom.c
+SOURCES_DIR;src
+PROJECT_DIR;.
+HEADERS_DIR;include
+LIBS_DIR;libs
+EXEC;doom
+CC;gcc
+CFLAGS;-wall -wextra -o2
+LDFLAGS;-lmath -lmy
+ZIPFLAGS;compression_options
+UNZIPFLAGS;decompression_options
+BCK_DIR;backup
+ZIP;zip
+UNZIP;unzip

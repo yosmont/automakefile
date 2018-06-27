@@ -1,0 +1,409 @@
+#!/bin/bash
+##
+## EPITECH PROJECT, 2018
+## SYN_automakefile_2017
+## File description:
+## automakefile
+##
+
+display_debug()
+{
+	echo
+	echo
+	echo
+	for i in ${var_name[@]}; do
+		echo $i
+	done
+	echo
+	for i in ${tab[@]}; do
+		echo $i
+	done
+	echo
+	for i in ${src_file[@]}; do
+		echo $i
+	done
+	echo
+	echo $src_dir
+}
+
+init_tab()
+{
+	cat $1 > tmp_automakefile_one
+	grep '\.c' tmp_automakefile_one > tmp_automakefile_two
+	grep -v '\.c' tmp_automakefile_one > tmp_automakefile_three
+	rm tmp_automakefile_one
+	for i in $(sed -e "s/;/\n/" tmp_automakefile_three); do
+		tab[$pos]=$i
+		pos=$(( $pos + 1 ))
+	done
+	len=${#tab[@]}
+	pos=0
+	for i in $(cut -f1 tmp_automakefile_three -d ";"); do
+		var_name[$pos]=$i
+		pos=$(( $pos + 1 ))
+	done
+	pos=0
+	for i in $(sed -e "s/;/\n/" tmp_automakefile_two); do
+		src_file[$pos]=$i
+		pos=$(( $pos + 1 ))
+	done
+	rm tmp_automakefile_two
+	rm tmp_automakefile_three
+}
+
+get_src_dir()
+{
+	pos=0
+	while [ $pos -lt $len ] && [ ${tab[$pos]} != "SOURCES_DIR" ]; do
+		pos=$(( $pos + 1 ))
+	done
+	if [ ${tab[$pos]} == "SOURCES_DIR" ]; then
+		src_dir=${tab[$pos+1]}
+		if [ "${src_dir: -1}" != "/" ]; then
+			src_dir=$src_dir"/"
+		fi
+	fi
+}
+
+get_proj_dir()
+{
+	pos=0
+	while [ $pos -lt $len ] && [ ${tab[$pos]} != "PROJECT_DIR" ]; do
+		pos=$(( $pos + 1 ))
+	done
+	if [ ${tab[$pos]} == "PROJECT_DIR" ]; then
+		proj_dir=${tab[$pos+1]}
+		if [ "${proj_dir: -1}" != "/" ]; then
+			proj_dir=$proj_dir"/"
+		fi
+	fi
+}
+
+get_exec_name()
+{
+	pos=0
+	while [ $pos -lt $len ] && [ ${tab[$pos]} != "EXEC" ]; do
+		pos=$(( $pos + 1 ))
+	done
+	if [ ${tab[$pos]} == "EXEC" ]; then
+		exec_name=${tab[$pos+1]}
+	fi
+}
+
+check_bck_var()
+{
+	check=0
+	check_if_its_in "BCK_DIR"
+	if [ $check == 1 ]; then
+		bck_exist=$(( $bck_exist + 1 ))
+	fi
+	check=0
+	check_if_its_in "ZIP"
+	if [ $check == 1 ]; then
+		bck_exist=$(( $bck_exist + 1 ))
+	fi
+	check=0
+	check_if_its_in "UNZIP"
+	if [ $check == 1 ]; then
+		bck_exist=$(( $bck_exist + 1 ))
+	fi
+	if [ $bck_exist == 3 ]; then
+		bck_exist=1
+	else
+		bck_exist=0
+	fi
+}
+
+print_header()
+{
+	echo "##" >> $makefile
+	echo "## EPITECH PROJECT, 2018" >> $makefile
+	echo "## yet another Makefile for ""${proj_dir::-1}" >> $makefile
+	echo "## File description:" >> $makefile
+	echo "## build "$exec_name", YAM!" >> $makefile
+	echo "##" >> $makefile
+	echo >> $makefile
+}
+
+print_var()
+{
+	len=${#tab[@]}
+	len=$(( $len - 1 ))
+	len_two=${#var_name[@]}
+	str=""
+	if [ $current_var_pos -lt $len_two ] && [ ${tab[$pos+1]} !=  ${var_name[$current_var_pos+1]} ] || [ $pos -lt $len ]; then
+		str=${tab[$pos]}'	'='	'${tab[$pos+1]}
+		pos=$(( $pos + 1 ))
+		while [ $pos -lt $len ] && [ ${tab[$pos+1]} != ${var_name[$current_var_pos+1]} ]; do
+			str=$str' '${tab[$pos+1]}
+			pos=$(( $pos + 1 ))
+		done
+		echo $str >> $makefile
+		echo >> $makefile
+	fi
+}
+
+print_SRC()
+{
+	tmp_var=0
+	for i in ${src_file[@]}; do
+		if [ $tmp_var == 0 ]; then
+			tmp_var=$(( $tmp_var + 1 ))
+			echo "SRC"'	'='	'$src_dir$i'	\' >> $makefile
+		else
+			echo '		'$src_dir$i'	\' >> $makefile
+		fi
+
+	done
+	echo >> $makefile
+}
+
+check_if_its_in()
+{
+	for i in ${var_name[@]}; do
+		if [ $i == $1 ]; then
+			check=1
+		fi
+	done
+}
+
+print_make()
+{
+	echo all:'		$(OBJ)' >> $makefile
+	if [ $lib_exist == 1 ]; then
+		echo '	$(MAKE)' -C '$(LIBS_DIR)' >> $makefile
+	fi
+	check=0
+	check_if_its_in "CC"
+	if [ $check == 1 ]; then
+		str='$(CC)'" "'$(OBJ)'
+	else
+		str="gcc "'$(OBJ)'
+	fi
+	check=0
+	check_if_its_in "EXEC"
+	if [ $check == 1 ]; then
+		str=$str" -o "'$(EXEC)'
+	fi
+	check=0
+	check_if_its_in "CFLAGS"
+	if [ $check == 1 ]; then
+		str=$str" "'$(CFLAGS)'
+	fi
+	check=0
+	check_if_its_in "HEADERS_DIR"
+	if [ $check == 1 ]; then
+		str=$str" -I"'$(HEADERS_DIR)'
+	fi
+	check=0
+	check_if_its_in "LIBS_DIR"
+	if [ $check == 1 ]; then
+		str=$str" -L"'$(LIBS_DIR)'
+	fi
+	check=0
+	check_if_its_in "LDFLAGS"
+	if [ $check == 1 ]; then
+		str=$str" "'$(LDFLAGS)'
+	fi
+	echo '	'$str >> $makefile
+	echo >> $makefile
+}
+
+print_clean()
+{
+	echo clean: >> $makefile
+	if [ $lib_exist == 1 ]; then
+		echo '	$(MAKE)' -C '$(LIBS_DIR)'" clean" >> $makefile
+	fi
+	echo '	'"rm -f "'$(OBJ)' >> $makefile
+	echo >> $makefile
+}
+
+print_fclean()
+{
+	echo fclean:'		'clean >> $makefile
+	if [ $lib_exist == 1 ]; then
+		echo '	$(MAKE)' -C '$(LIBS_DIR)'" fclean" >> $makefile
+	fi
+	check=0
+	check_if_its_in "EXEC"
+	if [ check == 1 ]; then
+		echo '	'"rm -f "'$(EXEC)' >> $makefile
+	else
+		echo '	'"rm -f a.out" >> $makefile
+	fi
+	echo >> $makefile
+}
+
+print_re()
+{
+	echo "re:"'		'"fclean all" >> $makefile
+	echo >> $makefile
+}
+
+print_num()
+{
+	echo "num:" >> $makefile
+	echo '	@echo "$(VERSION)"' >> $makefile
+	echo >> $makefile
+}
+
+print_archive()
+{
+	str=""
+	tmp=""
+	echo "archive:" >> $makefile
+	echo '	'"mkdir -p "'$(BCK_DIR)' >> $makefile
+	str='$(ZIP)'
+	check=0
+	check_if_its_in "ZIPFLAGS"
+	if [ $check == 1 ]; then
+		str=$str" "'$(ZIPFLAGS)'
+	fi
+	str=$str" "'$(BCK_DIR)'
+	pos=0
+	while [ $pos -lt $len ] && [ ${tab[$pos]} != "BCK_DIR" ]; do
+		pos=$(( $pos + 1 ))
+	done
+	if [ ${tab[$pos]} == "BCK_DIR" ]; then
+		tmp=${tab[$pos+1]}
+		if [ "${tmp: -1}" != "/" ]; then
+			str=$str"/"
+		fi
+	fi
+	str=$str"backup"'$(VERSION)'"."'$(ZIP)'" "'$(SRC)'
+	echo '	'$str >> $makefile
+	echo '	@echo "backup$(VERSION).$(ZIP) file generated."' >> $makefile
+	echo >> $makefile
+}
+
+print_revert()
+{
+	str=""
+	tmp=""
+	echo "revert:" >> $makefile
+	str='$(UNZIP)'
+	check=0
+	check_if_its_in "UNZIPFLAGS"
+	if [ $check == 1 ]; then
+		str=$str" "'$(UNZIPFLAGS)'
+	fi
+	str=$str" "'$(BCK_DIR)'
+	pos=0
+	while [ $pos -lt $len ] && [ ${tab[$pos]} != "BCK_DIR" ]; do
+		pos=$(( $pos + 1 ))
+	done
+	if [ ${tab[$pos]} == "BCK_DIR" ]; then
+		tmp=${tab[$pos+1]}
+		if [ "${tmp: -1}" != "/" ]; then
+			str=$str"/"
+		fi
+	fi
+	str=$str"backup"'$(VERSION)'"."'$(ZIP)'
+	echo '	'$str >> $makefile
+	echo >> $makefile
+}
+
+print_delete()
+{
+	str=""
+	echo "delete:" >> $makefile
+	str="rm "'$(BCK_DIR)'
+	pos=0
+	while [ $pos -lt $len ] && [ ${tab[$pos]} != "BCK_DIR" ]; do
+		pos=$(( $pos + 1 ))
+	done
+	if [ ${tab[$pos]} == "BCK_DIR" ]; then
+		tmp=${tab[$pos+1]}
+		if [ "${tmp: -1}" != "/" ]; then
+			str=$str"/"
+		fi
+	fi
+	str=$str"backup"'$(VERSION)'"."'$(ZIP)'
+	echo '	'$str >> $makefile
+	echo >> $makefile
+}
+
+print_phony()
+{
+	str=".PHONY:"'		'"all clean fclean re num"
+	if [ $bck_exist == 1 ]; then
+		str=$str" archive revert delete"
+	fi
+	echo $str >> $makefile
+}
+
+if [ $# != 1 ]; then
+	exit 84
+fi
+if [ ! -e $1 ]; then
+	exit 84
+fi
+tab=()
+var_name=()
+src_file=()
+pos=0
+check=0
+src_dir=""
+proj_dir=""
+exec_name="this project"
+lib_exist=0
+bck_exist=0
+init_tab $1
+##display_debug
+check=0
+check_if_its_in "PROJECT_DIR"
+if [ $check == 0 ]; then
+	exit 84
+fi
+if [ -z ${src_file[0]} ]; then
+	exit 84
+fi
+check=0
+check_if_its_in "LIBS_DIR"
+if [ $check == 1 ]; then
+	lib_exist=1
+fi
+len_three=${#var_name[@]}
+len_three=$(( $len_three - 1 ))
+get_src_dir
+get_proj_dir
+if [ ! -d "$proj_dir" ]; then
+	exit 84
+fi
+makefile=$proj_dir"Makefile"
+get_exec_name
+check_bck_var
+if [ -e $makefile ]; then
+	rm $makefile
+fi
+touch $makefile
+print_header
+print_SRC
+current_var_pos=0
+pos=0
+for i in ${var_name[@]}; do
+	while [ $pos -lt $len ] && [ ${tab[$pos]} != $i ]; do
+		pos=$(( $pos + 1 ))
+	done
+	if [ $current_var_pos == $len_three ]; then
+		current_var_pos=$(( $current_var_pos - 1 ))
+	fi
+	print_var
+	current_var_pos=$(( $current_var_pos + 1 ))
+done
+echo OBJ'	'='	$(SRC:.c=.o)' >> $makefile
+echo >> $makefile
+echo VERSION'	'='	'"1_0" >> $makefile
+echo >> $makefile
+print_make
+print_clean
+print_fclean
+print_re
+print_num
+if [ $bck_exist == 1 ]; then
+	print_archive
+	print_revert
+	print_delete
+fi
+print_phony

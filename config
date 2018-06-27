@@ -1,0 +1,10 @@
+source_filename;main.c bfg.c gzdoom.c
+SOURCES_DIR;src
+PROJECT_DIR;.
+HEADERS_DIR;include
+EXEC;doom
+CC;gcc
+CFLAGS;-Wall -Wextra -O2
+BCK_DIR;backup
+ZIP;zip
+UNZIP;unzip
