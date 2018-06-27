@@ -7,7 +7,7 @@ Usage: ./automakefile config_path
 
 exemple of a config file:
 
-![alt text](./configtest/newconfig)
+![config/newconfig](./configtest/newconfig)
 
 only line with .c file and PROJECT_DIR are mandatory, the order isn't important
 
