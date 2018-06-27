@@ -1,6 +1,6 @@
 source_filename;main.c bfg.c gzdoom.c
 SOURCES_DIR;src
-PROJECT_DIR;.
+PROJECT_DIR;./fakeproject/
 HEADERS_DIR;include
 EXEC;doom
 CC;gcc
