@@ -13,3 +13,5 @@ only line with .c file and PROJECT_DIR are mandatory, the order isn't important
 you can easely create your config file with create_config.sh
 
 Usage: ./create_config.sh config_path
+
+![subject](./B-SYN-200_automakefile.pdf)
